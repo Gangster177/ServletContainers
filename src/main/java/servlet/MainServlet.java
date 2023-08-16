@@ -1,8 +1,8 @@
 package servlet;
 
+import config.JavaConfig;
 import controller.PostController;
-import repository.PostRepository;
-import service.PostService;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,24 +18,21 @@ public class MainServlet extends HttpServlet {
 
     @Override
     public void init() {
-        final var repository = new PostRepository();
-        final var service = new PostService(repository);
-        controller = new PostController(service);
+        final var context = new AnnotationConfigApplicationContext(JavaConfig.class);
+        controller = context.getBean(PostController.class);
+        ;
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) {
-        // если деплоились в root context, то достаточно этого
         try {
             final var path = req.getRequestURI();
             final var method = req.getMethod();
-            // primitive routing
             if (method.equals(GET) && path.equals(API_POSTS)) {
                 controller.all(resp);
                 return;
             }
             if (method.equals(GET) && path.matches(API_POSTS_ID)) {
-                // easy way
                 controller.getById(getPostID(path), resp);
                 return;
             }
@@ -44,7 +41,6 @@ public class MainServlet extends HttpServlet {
                 return;
             }
             if (method.equals(DELETE) && path.matches(API_POSTS_ID)) {
-                // easy way
                 controller.removeById(getPostID(path), resp);
                 return;
             }
@@ -54,7 +50,8 @@ public class MainServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
-    private long getPostID (String path) {
+
+    private long getPostID(String path) {
         return Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
     }
 }

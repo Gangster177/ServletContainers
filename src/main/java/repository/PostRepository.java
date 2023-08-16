@@ -1,49 +1,16 @@
 package repository;
 
-import exception.NotFoundException;
 import model.Post;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
-// Stub
-public class PostRepository {
-    private final ConcurrentHashMap<Long, Post> posts;
-    private final AtomicLong postID;
+public interface PostRepository {
+    List<Post> all();
 
-    public PostRepository() {
-        posts = new ConcurrentHashMap<>();
-        postID = new AtomicLong(0);
-    }
+    Optional<Post> getById(long id);
 
-    public List<Post> all() {
-        return new ArrayList<>(posts.values());
-    }
+    Post save(Post post);
 
-    public Optional<Post> getById(long id) {
-        return Optional.ofNullable(posts.get(id));
-    }
-
-    public Post save(Post post) {
-        if (post.getId() == 0) {
-            long id = postID.incrementAndGet();
-            post.setId(id);
-            posts.put(id,post);
-        } else if (post.getId() != 0) {
-            Long currentId = post.getId();
-            posts.put(currentId, post);
-        }
-        return post;
-    }
-
-    public void removeById(long id) {
-        if (posts.containsKey(id)) {
-            posts.remove(id);
-        } else {
-            throw new NotFoundException("Введен неверный id");
-        }
-    }
+    void removeById(long id);
 }
